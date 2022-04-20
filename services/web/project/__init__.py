@@ -24,6 +24,11 @@ def hello_world():
         usersArr.append(user.toDict()) 
     return jsonify(usersArr)
 
+@app.route("/media/<path:id>")
+def mediafiles(id):
+    media = Media.query.get(id)
+    return send_from_directory(media.path, media.filename)
+
 @app.route("/list")
 def list_files():
     media = Media.query.all()
@@ -37,7 +42,7 @@ def upload_file():
     if request.method == "POST":
         file = request.files["file"]
         filename = secure_filename(file.filename)
-        path = os.path.join(app.config["MEDIA_FOLDER"], filename)
+        path = app.config["MEDIA_FOLDER"]
         file.save(os.path.join(app.config["MEDIA_FOLDER"], filename))
         db.session.add(Media(path=path, filename=filename))
         db.session.commit()
