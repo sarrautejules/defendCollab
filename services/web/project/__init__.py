@@ -1,20 +1,50 @@
-from flask import Flask, jsonify
+from flask import (
+    Flask,
+    jsonify,
+    send_from_directory,
+    request,
+    redirect,
+    url_for
+)
+from werkzeug.utils import secure_filename
+import os
 from flask_sqlalchemy import SQLAlchemy
+
 
 app = Flask(__name__)
 app.config.from_object("project.config.Config")
 db = SQLAlchemy(app)
-
-class User(db.Model):
-    __tablename__ = "users"
-
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(128), unique=True, nullable=False)
-    active = db.Column(db.Boolean(), default=True, nullable=False)
-
-    def __init__(self, email):
-        self.email = email
+from project.models import User, Media
 
 @app.route("/")
 def hello_world():
-    return jsonify(hello="world")
+    users = User.query.all()
+    usersArr = []
+    for user in users:
+        usersArr.append(user.toDict()) 
+    return jsonify(usersArr)
+
+@app.route("/list")
+def list_files():
+    media = Media.query.all()
+    mediaArr = []
+    for media in media:
+        mediaArr.append(media.toDict()) 
+    return jsonify(mediaArr)
+
+@app.route("/upload", methods=["GET", "POST"])
+def upload_file():
+    if request.method == "POST":
+        file = request.files["file"]
+        filename = secure_filename(file.filename)
+        path = os.path.join(app.config["MEDIA_FOLDER"], filename)
+        file.save(os.path.join(app.config["MEDIA_FOLDER"], filename))
+        db.session.add(Media(path=path, filename=filename))
+        db.session.commit()
+    return """
+    <!doctype html>
+    <title>upload new File</title>
+    <form action="" method=post enctype=multipart/form-data>
+      <p><input type=file name=file><input type=submit value=Upload>
+    </form>
+    """

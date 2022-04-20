@@ -1,6 +1,7 @@
 from flask.cli import FlaskGroup
 
-from project import app, db, User
+from project import app, db
+from project.models import User
 
 cli = FlaskGroup(app)
 
@@ -12,7 +13,7 @@ def create_db():
 
 @cli.command("seed_db")
 def seed_db():
-    db.session.add(User(email="michael@mherman.org"))
+    db.session.add(User(email="john@doe.lost"))
     db.session.commit()
 
 if __name__ == "__main__":
