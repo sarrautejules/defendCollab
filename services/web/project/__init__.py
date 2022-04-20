@@ -1,6 +1,8 @@
+from email import message
 from flask import (
     Flask,
     jsonify,
+    make_response,
     send_from_directory,
     request,
     render_template,
@@ -8,6 +10,7 @@ from flask import (
     url_for
 )
 import json
+from sqlalchemy import null
 from werkzeug.utils import secure_filename
 import os
 from flask_sqlalchemy import SQLAlchemy
@@ -19,17 +22,47 @@ db = SQLAlchemy(app)
 from project.models import User, Media, Dataset
 
 @app.route("/")
-def hello_world():
-    users = User.query.all()
-    usersArr = []
-    for user in users:
-        usersArr.append(user.toDict()) 
-    return jsonify(usersArr)
+def list_projects():
+    projects = Dataset.query.all()
+    return render_template('datasets.html', projects=projects)
+    # usersArr = []
+    # for user in users:
+    #     usersArr.append(user.toDict()) 
+    # return jsonify(usersArr)
+
+@app.route("/user", methods=["PUT", "POST"])
+def users():
+    try:
+        if request.method == "POST":
+            email = request.form.get('email')
+            password = request.form.get('password')
+            user = User.query.filter_by(email=email).one().is_ok_login(password)
+            if user != {}:
+                res = make_response(jsonify({
+                    'email': user.email,
+                    'jwt': user.hash,
+                    'active': user.active
+                }))
+                res.set_cookie('jwt', user.hash)
+                return res
+            else:
+                return redirect('/', '301')
+        if request.method == "PUT":
+            email = request.form.get('email')
+            password = request.form.get('password')
+            db.session.add(User(email=email, password=password))
+            db.session.commit()
+            return "User created", 201
+    except Exception as e:
+        return "Debug error: {0}".format(e), 500
 
 @app.route("/media/<path:id>")
-def mediafiles(id):
-    media = Media.query.get(id)
-    return send_from_directory(media.path, media.filename)
+def media_files(id):
+    try:
+        media = Media.query.get(id)
+        return send_from_directory(media.path, media.filename)
+    except Exception as e:
+        return "Le média n'existe pas", 404
 
 @app.route("/list")
 def list_files():
@@ -49,31 +82,41 @@ def list_config():
 
 @app.route("/configlist/option/<path:id>")
 def get_config(id):
-    dataset = Dataset.query.get(id)
-    data = json.loads(dataset.config)
-    return jsonify(data)
+    try:
+        dataset = Dataset.query.get(id)
+        data = json.loads(dataset.config)
+        return jsonify(data)
+    except Exception as e:
+        return "Le json a été mal formaté pour ce Dataset", 500
 
 @app.route("/config", methods=["GET", "POST"])
 def config_path():
-    if request.method == "POST":
-        project = request.form.get('projectname')
-        config = request.form.get('config')
-        # filename = secure_filename(file.filename)
-        # path = app.config["MEDIA_FOLDER"]
-        # file.save(os.path.join(app.config["MEDIA_FOLDER"], filename))
-        db.session.add(Dataset(projectName=project, config=config))
-        db.session.commit()
-    return render_template('config.html')
+    try:
+        if request.method == "POST":
+            project = request.form.get('projectname')
+            config = request.form.get('config')
+            # filename = secure_filename(file.filename)
+            # path = app.config["MEDIA_FOLDER"]
+            # file.save(os.path.join(app.config["MEDIA_FOLDER"], filename))
+            db.session.add(Dataset(projectName=project, config=config))
+            db.session.commit()
+        return render_template('config.html')
+    except Exception as e:
+        return "Une erreur est survenue", 500
 
 @app.route("/upload/<path:id>", methods=["GET", "POST"])
 def upload_file(id):
-    if request.method == "POST":
-        file = request.files["file"]
-        filename = secure_filename(file.filename)
-        path = app.config["MEDIA_FOLDER"]
-        file.save(os.path.join(app.config["MEDIA_FOLDER"], filename))
-        db.session.add(Media(path=path, filename=filename))
-        db.session.commit()
-    dataset = Dataset.query.get(id)
-    data = json.loads(dataset.config)
-    return render_template('upload.html', title=dataset.projectName, project=data)
+    try:
+        if request.method == "POST":
+            file = request.files["file"]
+            filename = secure_filename(file.filename)
+            path = app.config["MEDIA_FOLDER"]
+            option = request.form.get('option')
+            file.save(os.path.join(app.config["MEDIA_FOLDER"], filename))
+            db.session.add(Media(path=path, filename=filename, project=id, option=option))
+            db.session.commit()
+        dataset = Dataset.query.get(id)
+        data = json.loads(dataset.config)
+        return render_template('upload.html', title=dataset.projectName, project=data, id=dataset.id)
+    except Exception as e:
+        return "Le projet n'existe pas", 404

@@ -1,15 +1,35 @@
-from project import db
+from project import db, app
 from sqlalchemy import inspect
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
 
 class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128), unique=True, nullable=False)
-    active = db.Column(db.Boolean(), default=True, nullable=False)
+    password = db.Column(db.String(254), nullable=False)
+    active = db.Column(db.Boolean(), default=False, nullable=False)
 
-    def __init__(self, email):
+    def __init__(self, email, password):
         self.email = email
+        self.password = self.hash_password(password)
+
+    def hash_password(self, password):
+        return generate_password_hash(password)
+
+    def is_ok_login(self, password):
+        if check_password_hash(self.password, password):
+            hash = jwt.encode({
+                "email": self.email
+            },
+            app.config["SECRET_KEY"],
+            algorithm="HS256"
+            )
+            self.hash = hash
+            return self
+        else : 
+         return {}
 
     def toDict(self):
         return { c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs }
@@ -19,13 +39,15 @@ class Media(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     path = db.Column(db.String(255), nullable=False)
-    project = db.Column(db.Integer, nullable=False)
+    project = db.Column(db.String(255), nullable=False)
     option = db.Column(db.String(255), nullable=False)
     filename = db.Column(db.String(128), unique=True, nullable=False)
 
-    def __init__(self, path, filename):
+    def __init__(self, path, filename, project, option):
         self.path = path
         self.filename = filename
+        self.project = project
+        self.option = option
 
     def toDict(self):
         return { c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs }
