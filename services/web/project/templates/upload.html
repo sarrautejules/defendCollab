@@ -1,13 +1,23 @@
-<!doctype html>
-<title>upload new File</title>
-<h1>{{title}}</h1>
+{% extends 'base.html' %}
+
+{% block content %}
 <form action="" method=post enctype=multipart/form-data>
-  <select name="option">
+  <div class="mb-3">
+    <span>Option de filtrage: </span>
+    <select name="option" class="form-select form-select-sm">
       {% for option in project.options %}
         <option value={{option}}>{{option}}</option>
       {% endfor %}
-  </select>
-  <input type="file" name="file">
+    </select>
+  </div>
+  
+
+  <div class="mb-3">
+    <input class="form-control" id="formFile" type="file" name="file">
+    <label for="formFile" class="form-label">File to upload</label>
+  </div>
+
   <input type="hidden" name="project" value={{id}}>
-  <input type="submit" value="Upload">
+  <input class="btn btn-secondary" type="submit" value="Upload">
 </form>
+{% endblock %}

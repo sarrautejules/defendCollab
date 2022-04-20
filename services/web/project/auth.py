@@ -16,9 +16,7 @@ def token_required(f):
             }, 401
         try:
             data=jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
-            # current_user=models.User().get_by_id(data["user_id"])
             current_user=User.query.filter_by(uuid=data["uuid"]).one()
-            # current_user = data['uuid']
             if current_user is None:
                 return {
                     "message": "Invalid Authentication token!",

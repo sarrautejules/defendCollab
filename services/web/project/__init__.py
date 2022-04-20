@@ -1,6 +1,7 @@
 from email import message
 from flask import (
     Flask,
+    flash,
     jsonify,
     make_response,
     send_from_directory,
@@ -42,25 +43,32 @@ def user(current_user):
         }
     })
 
-@app.route("/user/login", methods=["PUT", "POST"])
-def users():
+@app.route("/user/login", methods=["GET","POST"])
+def user_login():
     try:
         if request.method == "POST":
             email = request.form.get('email')
             password = request.form.get('password')
             user = User.query.filter_by(email=email).one().is_ok_login(password)
             if user != {}:
-                res = make_response(jsonify({
-                    'email': user.email,
-                    'jwt': user.hash,
-                    'uuid': user.uuid,
-                    'active': user.active
-                }))
+                flash(message="Logged in welcome {0}".format(user.email), category="info")
+                res = make_response(render_template('login.html'))
                 res.set_cookie('jwt', user.hash)
                 return res
-            else:
-                return redirect('/', '301')
-        if request.method == "PUT":
+        flash(message="Invalid credentials", category="warning")
+        res = make_response(render_template('login.html'))
+        res.set_cookie('jwt', '', expires=0)
+        return res
+    except Exception as e:
+        flash(message=e, category="warning")
+        res = make_response(render_template('login.html'))
+        res.set_cookie('jwt', '', expires=0)
+        return res
+
+@app.route("/user/register", methods=["POST"])
+def user_register():
+    try:
+        if request.method == "POST":
             email = request.form.get('email')
             password = request.form.get('password')
             db.session.add(User(email=email, password=password))
@@ -103,7 +111,8 @@ def get_config(id):
         return "Le json a été mal formaté pour ce Dataset", 500
 
 @app.route("/config", methods=["GET", "POST"])
-def config_path():
+@token_required
+def config_path(current_user):
     try:
         if request.method == "POST":
             project = request.form.get('projectname')
@@ -115,18 +124,20 @@ def config_path():
             db.session.commit()
         return render_template('config.html')
     except Exception as e:
-        return "Une erreur est survenue", 500
+        return "Une erreur est survenue {0}".format(e), 500
 
 @app.route("/upload/<path:id>", methods=["GET", "POST"])
 def upload_file(id):
     try:
         if request.method == "POST":
             file = request.files["file"]
+            mimetype = file.content_type
+            length = file.content_length
             filename = secure_filename(file.filename)
             path = app.config["MEDIA_FOLDER"]
             option = request.form.get('option')
             file.save(os.path.join(app.config["MEDIA_FOLDER"], filename))
-            db.session.add(Media(path=path, filename=filename, project=id, option=option))
+            db.session.add(Media(path=path, filename=filename, project=id, option=option, mimetype=mimetype, length=str(length)))
             db.session.commit()
         dataset = Dataset.query.get(id)
         data = json.loads(dataset.config)

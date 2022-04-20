@@ -45,13 +45,17 @@ class Media(db.Model):
     path = db.Column(db.String(255), nullable=False)
     project = db.Column(db.String(255), nullable=False)
     option = db.Column(db.String(255), nullable=False)
-    filename = db.Column(db.String(128), unique=True, nullable=False)
+    filename = db.Column(db.String(128), nullable=False)
+    mimetype = db.Column(db.String(128), nullable=False)
+    length = db.Column(db.String(128), nullable=False)
 
-    def __init__(self, path, filename, project, option):
+    def __init__(self, path, filename, project, option, mimetype, length):
         self.path = path
         self.filename = filename
         self.project = project
         self.option = option
+        self.mimetype = mimetype
+        self.length = length
 
     def toDict(self):
         return { c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs }
