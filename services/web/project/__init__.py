@@ -3,9 +3,11 @@ from flask import (
     jsonify,
     send_from_directory,
     request,
+    render_template,
     redirect,
     url_for
 )
+import json
 from werkzeug.utils import secure_filename
 import os
 from flask_sqlalchemy import SQLAlchemy
@@ -14,7 +16,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.config.from_object("project.config.Config")
 db = SQLAlchemy(app)
-from project.models import User, Media
+from project.models import User, Media, Dataset
 
 @app.route("/")
 def hello_world():
@@ -37,8 +39,34 @@ def list_files():
         mediaArr.append(media.toDict()) 
     return jsonify(mediaArr)
 
-@app.route("/upload", methods=["GET", "POST"])
-def upload_file():
+@app.route("/configlist")
+def list_config():
+    dataset = Dataset.query.all()
+    datasetArr = []
+    for dataset in dataset:
+        datasetArr.append(dataset.toDict()) 
+    return jsonify(datasetArr)
+
+@app.route("/configlist/option/<path:id>")
+def get_config(id):
+    dataset = Dataset.query.get(id)
+    data = json.loads(dataset.config)
+    return jsonify(data)
+
+@app.route("/config", methods=["GET", "POST"])
+def config_path():
+    if request.method == "POST":
+        project = request.form.get('projectname')
+        config = request.form.get('config')
+        # filename = secure_filename(file.filename)
+        # path = app.config["MEDIA_FOLDER"]
+        # file.save(os.path.join(app.config["MEDIA_FOLDER"], filename))
+        db.session.add(Dataset(projectName=project, config=config))
+        db.session.commit()
+    return render_template('config.html')
+
+@app.route("/upload/<path:id>", methods=["GET", "POST"])
+def upload_file(id):
     if request.method == "POST":
         file = request.files["file"]
         filename = secure_filename(file.filename)
@@ -46,10 +74,6 @@ def upload_file():
         file.save(os.path.join(app.config["MEDIA_FOLDER"], filename))
         db.session.add(Media(path=path, filename=filename))
         db.session.commit()
-    return """
-    <!doctype html>
-    <title>upload new File</title>
-    <form action="" method=post enctype=multipart/form-data>
-      <p><input type=file name=file><input type=submit value=Upload>
-    </form>
-    """
+    dataset = Dataset.query.get(id)
+    data = json.loads(dataset.config)
+    return render_template('upload.html', title=dataset.projectName, project=data)

@@ -1,0 +1,12 @@
+<!doctype html>
+<title>upload new File</title>
+<h1>{{title}}</h1>
+<form action="" method=post enctype=multipart/form-data>
+  <select name="option">
+      {% for option in project.options %}
+        <option value={option}}>{{option}}</option>
+      {% endfor %}
+  </select>
+  <input type=file name=file>
+  <input type=submit value=Upload>
+</form>
