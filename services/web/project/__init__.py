@@ -16,11 +16,12 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 
 
+
 app = Flask(__name__)
 app.config.from_object("project.config.Config")
 db = SQLAlchemy(app)
 from project.models import User, Media, Dataset
-
+from project.auth import token_required
 @app.route("/")
 def list_projects():
     projects = Dataset.query.all()
@@ -29,8 +30,19 @@ def list_projects():
     # for user in users:
     #     usersArr.append(user.toDict()) 
     # return jsonify(usersArr)
+@app.route("/user", methods=["GET"])
+@token_required
+def user(current_user):
+    return jsonify({
+        "message": "User profile",
+        "data": {
+            "email": current_user.email,
+            "uuid": current_user.uuid,
+            "active": current_user.active
+        }
+    })
 
-@app.route("/user", methods=["PUT", "POST"])
+@app.route("/user/login", methods=["PUT", "POST"])
 def users():
     try:
         if request.method == "POST":
@@ -41,6 +53,7 @@ def users():
                 res = make_response(jsonify({
                     'email': user.email,
                     'jwt': user.hash,
+                    'uuid': user.uuid,
                     'active': user.active
                 }))
                 res.set_cookie('jwt', user.hash)

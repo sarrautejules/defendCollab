@@ -2,6 +2,7 @@ from project import db, app
 from sqlalchemy import inspect
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
+import uuid
 
 class User(db.Model):
     __tablename__ = "users"
@@ -9,11 +10,13 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128), unique=True, nullable=False)
     password = db.Column(db.String(254), nullable=False)
+    uuid = db.Column(db.String(254), nullable=False)
     active = db.Column(db.Boolean(), default=False, nullable=False)
 
     def __init__(self, email, password):
         self.email = email
         self.password = self.hash_password(password)
+        self.uuid = str(uuid.uuid4())
 
     def hash_password(self, password):
         return generate_password_hash(password)
@@ -21,10 +24,11 @@ class User(db.Model):
     def is_ok_login(self, password):
         if check_password_hash(self.password, password):
             hash = jwt.encode({
-                "email": self.email
-            },
-            app.config["SECRET_KEY"],
-            algorithm="HS256"
+                    "email": self.email,
+                    "uuid": self.uuid
+                },
+                app.config["SECRET_KEY"],
+                algorithm="HS256"
             )
             self.hash = hash
             return self
