@@ -87,15 +87,16 @@ def media_files(id):
     except Exception as e:
         return "Le média n'existe pas", 404
 
-@app.route("/list")
+@app.route("/media")
 def list_files():
-    media = Media.query.all()
-    mediaArr = []
-    for media in media:
-        mediaArr.append(media.toDict()) 
-    return jsonify(mediaArr)
+    medias = Media.query.all()
+    return render_template('medias.html', medias=medias)
+    # mediaArr = []
+    # for media in media:
+    #     mediaArr.append(media.toDict()) 
+    # return jsonify(mediaArr)
 
-@app.route("/configlist")
+@app.route("/config")
 def list_config():
     dataset = Dataset.query.all()
     datasetArr = []
@@ -112,7 +113,7 @@ def get_config(id):
     except Exception as e:
         return "Le json a été mal formaté pour ce Dataset", 500
 
-@app.route("/config", methods=["GET", "POST"])
+@app.route("/config/add", methods=["GET", "POST"])
 @token_required
 def config_path(current_user):
     try:

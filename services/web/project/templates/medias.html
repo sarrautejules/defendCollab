@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Medias{% endblock %}
+{% block h1 %}Medias{% endblock %}
+{% block content %}
+<table class="table table-dark table-striped">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Name</th>
+            <th>Type</th>
+            <th>Option</th>
+            <th>Action</th>
+		</tr>
+	</thead>
+  <tbody>
+    {% for media in medias %}
+      <tr>
+        <td><span class="align-baseline">{{media.id}}</span></td>
+        <td><span class="align-baseline">{{media.filename}}</span></td>
+        <td><span class="align-baseline">{{media.mimetype}}</span></td>
+        <td><span class="align-baseline">{{media.option}}</span></td>
+        <td><a target="_blank" class="btn btn-secondary" href="media/{{media.id}}">Download</a></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
