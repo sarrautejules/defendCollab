@@ -55,12 +55,14 @@ def user_login():
                 res = make_response(render_template('login.html'))
                 res.set_cookie('jwt', user.hash)
                 return res
-        flash(message="Invalid credentials", category="warning")
-        res = make_response(render_template('login.html'))
-        res.set_cookie('jwt', '', expires=0)
-        return res
+        token = request.cookies.get('jwt')
+        if not token:
+            flash(message="Not logged in", category="warning")
+        else:
+            flash(message="Already logged in", category="info")
+        return render_template('login.html')
     except Exception as e:
-        flash(message=e, category="warning")
+        flash(message="Login error", category="error")
         res = make_response(render_template('login.html'))
         res.set_cookie('jwt', '', expires=0)
         return res

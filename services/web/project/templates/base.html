@@ -31,7 +31,11 @@
   </nav>
   <div class="container">
     {% for category, message in get_flashed_messages(with_categories=true) %}
-      <div class="alert alert-{{category}}">{{ message }}</div>
+      {% if category == "error" %}
+        <div class="alert alert-danger">{{ message }}</div>
+      {% else %}
+        <div class="alert alert-{{category}}">{{ message }}</div>
+      {% endif %}
     {% endfor %}
     <h1>{% block h1 %} {% endblock %}</h1>
     {% block content %} {% endblock %}
