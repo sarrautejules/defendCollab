@@ -12,8 +12,8 @@ def token_required(f):
             flash(message='Token missing', category='error')
             return redirect('/user/login')
         try:
-            data=jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
-            current_user=User.query.filter_by(uuid=data["uuid"]).one()
+            # data=
+            current_user=jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
             if current_user is None:
                 flash(message='Error: {0}'.format(e), category='error')
                 return redirect('/user/login')

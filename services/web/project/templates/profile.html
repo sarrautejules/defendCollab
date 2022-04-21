@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Profile{% endblock %}
+{% block h1 %}Profile{% endblock %}
+{% block content %}
+<form action="" method="post" enctype="multipart/form-data">
+  <div class="form-floating mb-3 mt-3">
+    <input type="text" class="form-control" id="email" name="email" value="{{user.email}}" disabled readonly>
+    <label for="email">Email</label>
+  </div>
+  
+  <div class="form-floating mt-3 mb-3">
+    <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="password">
+    <label for="pwd">Password</label>
+  </div>
+
+  <div class="form-floating mt-3 mb-3">
+    <input type="text" class="form-control" id="role" name="role" value="{{user.role}}" disabled readonly>
+    <label for="role">Role</label>
+  </div>
+  
+  <input class="btn btn-primary" type="submit" value="Update">
+</form>
+{% endblock %}

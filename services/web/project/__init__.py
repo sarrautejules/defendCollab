@@ -1,4 +1,5 @@
 from email import message
+from re import U
 from flask import (
     Flask,
     flash,
@@ -31,16 +32,27 @@ def list_projects():
     # for user in users:
     #     usersArr.append(user.toDict()) 
     # return jsonify(usersArr)
-@app.route("/user", methods=["GET"])
+@app.route("/user", methods=["GET", "POST"])
 @token_required
 def user(current_user):
-    return jsonify({
-        "message": "User profile",
-        "data": {
-            "email": current_user.email,
-            "uuid": current_user.uuid,
-            "active": current_user.active
-        }
+    if request.method == "POST":
+        password = request.form.get('password')
+        modified_user = User(email=current_user['email'], password=password)
+        modified_user.update_password(password=password)
+    # return jsonify({
+    #     "message": "User profile",
+    #     "data": {
+    #         "email": current_user['email'],
+    #         "uuid": current_user['uuid'],
+    #         "active": current_user['active'],
+    #         "role": current_user['role']
+    #     }
+    # })
+    return render_template('profile.html', user={
+            "email": current_user['email'],
+            "uuid": current_user['uuid'],
+            "active": current_user['active'],
+            "role": current_user['role']
     })
 
 @app.route("/user/login", methods=["GET","POST"])
@@ -125,6 +137,9 @@ def get_config(id):
 @token_required
 def config_path(current_user):
     try:
+        if not (current_user['active'] == True and current_user['role'] == "admin"):
+            flash(message="Not allowed", category="error")
+            return redirect('/')
         if request.method == "POST":
             project = request.form.get('projectname')
             config = request.form.get('config')

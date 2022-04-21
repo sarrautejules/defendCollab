@@ -10,13 +10,21 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128), unique=True, nullable=False)
     password = db.Column(db.String(254), nullable=False)
+    role = db.Column(db.String(254), nullable=False)
     uuid = db.Column(db.String(254), nullable=False)
     active = db.Column(db.Boolean(), default=False, nullable=False)
 
-    def __init__(self, email, password):
+    def __init__(self, email, password, role="user", active=False):
         self.email = email
         self.password = self.hash_password(password)
+        self.role = role
+        self.active = active
         self.uuid = str(uuid.uuid4())
+
+    def update_password(self, password):
+        s = db.session
+        s.query(User).filter(User.email == self.email).update({'password': self.hash_password(password)})
+        s.commit()
 
     def hash_password(self, password):
         return generate_password_hash(password)
@@ -25,7 +33,9 @@ class User(db.Model):
         if check_password_hash(self.password, password):
             hash = jwt.encode({
                     "email": self.email,
-                    "uuid": self.uuid
+                    "uuid": self.uuid,
+                    "role": self.role,
+                    "active": self.active
                 },
                 app.config["SECRET_KEY"],
                 algorithm="HS256"
