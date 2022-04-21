@@ -9,7 +9,20 @@ Simple API avec gestion des datasets et des media uploads.
     - [ ] Mise en place modération du contenu
     – [ ] Mise en place modération des utilisateurs
 - [ ] Nettoyage du code
-- [ ] Révision de la méthode de mise en production 
+- [ ] Révision de la méthode de mise en production
+
+# Contribuer
+Vous pouvez ouvrir des PR
+
+Utilisation de docker et docker compose
+démarrer en mode détaché
+```
+docker-compose up -d --build
+```
+démarrer avec les logs attachés au terminal
+```
+docker-compose up --build
+```
 
 ### Bootstrap Flask API
 Based on https://testdriven.io/blog/dockerizing-flask-with-postgres-gunicorn-and-nginx/
