@@ -5,7 +5,7 @@ Simple API avec gestion des datasets et des media uploads.
 - [x] Mise en place des templates
 - [ ] Gestion de la sécurité (user, droits pour la configuration des datasets)
     - [x] Mise en place du JWT
-    - [ ] Mise en place des permissions
+    - [x] Mise en place des permissions
     - [ ] Mise en place modération du contenu
     - [ ] Mise en place modération des utilisateurs
 - [ ] Nettoyage du code
