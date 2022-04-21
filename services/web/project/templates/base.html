@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-100">
 <head>
   <meta charset="UTF-8">
   <title>{% block title %} {% endblock %} - Defend Collab</title>
@@ -10,38 +10,54 @@
   <!-- Latest compiled JavaScript -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body class="bg-light bg-gradient">
-  <nav class="navbar navbar-expand-sm bg-dark navbar-dark ">
-    <div class="container-fluid">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="navbar-brand" href="#">Defend Collab</a>
-        </li>
-        <li class="nav-item"></li>
-          <a class="nav-link" href="/user/login">Login</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/user/register">Signup</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/config/add">Config</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/">Datasets</a>
-        </li>
-      </ul>
+<body class="bg-light bg-gradient d-flex flex-column h-100">
+  <header>
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark ">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Defend Collab</a>
+        <ul class="navbar-nav">
+          <li class="nav-item"></li>
+            <a class="nav-link" href="/user/login">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/user/register">Signup</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/config/add">Config</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/">Datasets</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <main class="flex-shrink-0">
+    <div class="container">
+      {% for category, message in get_flashed_messages(with_categories=true) %}
+        {% if category == "error" %}
+          <div class="alert alert-danger">{{ message }}</div>
+        {% else %}
+          <div class="alert alert-{{category}}">{{ message }}</div>
+        {% endif %}
+      {% endfor %}
+      <h1>{% block h1 %} {% endblock %}</h1>
+      {% block content %} {% endblock %}
     </div>
-  </nav>
-  <div class="container">
-    {% for category, message in get_flashed_messages(with_categories=true) %}
-      {% if category == "error" %}
-        <div class="alert alert-danger">{{ message }}</div>
-      {% else %}
-        <div class="alert alert-{{category}}">{{ message }}</div>
-      {% endif %}
-    {% endfor %}
-    <h1>{% block h1 %} {% endblock %}</h1>
-    {% block content %} {% endblock %}
-  </div>
+  </main>
+  
+  <footer class="footer mt-auto py-3 bg-light">
+    <div class="container">
+      <div class="col-md-4 d-flex align-items-center">
+        <span class="text-muted">© 2022 Defend Collab</span>
+        <span class="text-muted"> | </span>
+        <a target="blank" href="https://github.com/sarrautejules/defendCollab" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1">
+          Github
+        </a>
+      </div>
+
+    </div>
+    
+  </footer>
 </body>
 </html>
