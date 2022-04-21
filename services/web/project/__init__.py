@@ -67,17 +67,24 @@ def user_login():
         res.set_cookie('jwt', '', expires=0)
         return res
 
-@app.route("/user/register", methods=["POST"])
+@app.route("/user/register", methods=["GET", "POST"])
 def user_register():
     try:
         if request.method == "POST":
             email = request.form.get('email')
             password = request.form.get('password')
+            password2 = request.form.get('password2')
+            if password != password2:
+                flash(message="Password does not match", category="warning")
+                return render_template('datasets.html')
             db.session.add(User(email=email, password=password))
             db.session.commit()
-            return "User created", 201
+            flash(message="Successfully registered {0}".format(email), category="info")
+            return render_template('register.html')
+        return render_template('register.html')
     except Exception as e:
-        return "Debug error: {0}".format(e), 500
+        flash(message="Error {0}".format(e), category="error")
+        return render_template('register.html')
 
 @app.route("/media/<path:id>")
 def media_files(id):
@@ -85,7 +92,8 @@ def media_files(id):
         media = Media.query.get(id)
         return send_from_directory(media.path, media.filename)
     except Exception as e:
-        return "Le média n'existe pas", 404
+        flash(message="Le fichier n'existe pas", category="error")
+        return redirect('/')
 
 @app.route("/media")
 def list_files():
@@ -127,7 +135,8 @@ def config_path(current_user):
             db.session.commit()
         return render_template('config.html')
     except Exception as e:
-        return "Une erreur est survenue {0}".format(e), 500
+        flash(message="Error: {0}".format(e), category="error")
+        return render_template('config.html')
 
 @app.route("/upload/<path:id>", methods=["GET", "POST"])
 def upload_file(id):
@@ -146,4 +155,5 @@ def upload_file(id):
         data = json.loads(dataset.config)
         return render_template('upload.html', title=dataset.projectName, project=data, id=dataset.id)
     except Exception as e:
-        return "Le projet n'existe pas", 404
+        flash(message="Error: {0}".format(e), category="error")
+        return redirect('/')
