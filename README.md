@@ -7,7 +7,7 @@ Simple API avec gestion des datasets et des media uploads.
     - [x] Mise en place du JWT
     - [ ] Mise en place des permissions
     - [ ] Mise en place modération du contenu
-    – [ ] Mise en place modération des utilisateurs
+    - [ ] Mise en place modération des utilisateurs
 - [ ] Nettoyage du code
 - [ ] Révision de la méthode de mise en production
 
